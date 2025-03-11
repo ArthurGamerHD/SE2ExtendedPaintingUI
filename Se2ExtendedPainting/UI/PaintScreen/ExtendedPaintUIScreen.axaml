@@ -1,0 +1,106 @@
+<UserControl xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:colorPicker="clr-namespace:Se2ExtendedPainting.UI.ColorPicker"
+             xmlns:paintScreen="clr-namespace:Se2ExtendedPainting.UI.PaintScreen"
+             xmlns:mathematics="clr-namespace:Keen.VRage.Library.Mathematics;assembly=VRage.Library" mc:Ignorable="d"
+             d:DesignWidth="1920" d:DesignHeight="1080" x:DataType="paintScreen:ExtendedPaintUIViewModel"
+             x:Class="Se2ExtendedPainting.UI.PaintScreen.ExtendedPaintUIScreen" x:CompileBindings="True">
+    <UserControl.Styles>
+        <StyleInclude Source="/UI/ColorPicker/ColorPickerControl.axaml" />
+        <Style Selector="Button Border.ColorFrame">
+            <Setter Property="BorderBrush" Value="#161616" />
+        </Style>
+        <Style Selector="Button.Active Border.ColorFrame">
+            <Setter Property="BorderBrush" Value="#E08B0E" />
+        </Style>
+    </UserControl.Styles>
+    <UserControl.Resources>
+        <paintScreen:HSVtoBrushConverter x:Key="_HSVtoBrushConverter" />
+    </UserControl.Resources>
+    <Grid ColumnDefinitions="* 1920 *" RowDefinitions="*">
+        <Canvas Name="PART_Canvas" Grid.Column="1" Width="1920" Height="1080" HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch">
+
+            <Line StartPoint="970 530" EndPoint="1060 497"
+                  Stroke="#E08B0E"
+                  StrokeThickness="2" />
+
+            <Grid x:Name="PART_Content"
+                  RowDefinitions="Auto,Auto"
+                  ColumnDefinitions="5,Auto,10"
+                  HorizontalAlignment="Left"
+                  VerticalAlignment="Top"
+                  Canvas.Top="215"
+                  Canvas.Left="1060"
+                  IsVisible="True">
+
+
+                <Rectangle Grid.Column="1"
+                           Grid.Row="0"
+                           Grid.RowSpan="2"
+                           Fill="{StaticResource Black}"
+                           Opacity="{DynamicResource HUDOpacity}" />
+
+                <colorPicker:ColorPickerControl
+                    Name="PART_Picker"
+                    Color="{Binding Color, Mode=TwoWay}"
+                    Grid.Row="0"
+                    Grid.Column="1" />
+                <StackPanel Orientation="Horizontal" Grid.Row="1"
+                            Grid.Column="1" HorizontalAlignment="Center">
+
+                    <ItemsRepeater Name="PART_ItemsRepeater"
+                                   ItemsSource="{Binding Palette}">
+
+                        <ItemsRepeater.Layout>
+                            <UniformGridLayout />
+                        </ItemsRepeater.Layout>
+
+                        <ItemsRepeater.ItemTemplate>
+                            <DataTemplate x:DataType="mathematics:ColorHSV">
+                                <Button Click="Button_OnClick" PointerPressed="Button_Pressed">
+                                    <Button.Template>
+                                        <ControlTemplate>
+                                            <Border Classes="ColorFrame" Margin="8" Width="32" Height="32"
+                                                    BorderThickness="1"
+                                                    Background="{Binding Converter={StaticResource _HSVtoBrushConverter}}" />
+                                        </ControlTemplate>
+                                    </Button.Template>
+                                </Button>
+                            </DataTemplate>
+                        </ItemsRepeater.ItemTemplate>
+                    </ItemsRepeater>
+
+                    <Button Command="{Binding OpenPaletteSettings}">
+                        <Button.Template>
+                            <ControlTemplate>
+                                <Border Classes="ColorFrame" Margin="8" Width="32" Height="32" BorderThickness="1"
+                                        Background="#001c2a">
+                                    <Path Fill="White" Margin="4" Stretch="UniformToFill"
+                                          Data="M14.5,13 L14.5,3.75378577 C14.5,3.33978577 14.164,3.00378577 13.75,3.00378577 C13.336,3.00378577 13,3.33978577 13,3.75378577 L13,13 L3.75387573,13 C3.33987573,13 3.00387573,13.336 3.00387573,13.75 C3.00387573,14.164 3.33987573,14.5 3.75387573,14.5 L13,14.5 L13,23.7523651 C13,24.1663651 13.336,24.5023651 13.75,24.5023651 C14.164,24.5023651 14.5,24.1663651 14.5,23.7523651 L14.5,14.5 L23.7498262,14.5030754 C24.1638262,14.5030754 24.4998262,14.1670754 24.4998262,13.7530754 C24.4998262,13.3390754 24.1638262,13.0030754 23.7498262,13.0030754 L14.5,13 Z" />
+                                </Border>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+
+                </StackPanel>
+
+                <Rectangle Grid.Row="0"
+                           Grid.RowSpan="2"
+                           Grid.Column="0"
+                           Width="5"
+                           VerticalAlignment="Stretch"
+                           HorizontalAlignment="Left"
+                           Fill="{Binding #PART_Picker.ColorPreview}" />
+
+                <Polygon Grid.Column="2"
+                         Grid.Row="0"
+                         Grid.RowSpan="2"
+                         Points="0,6 7,16 7,268 0,278 0,284"
+                         Fill="{StaticResource Black}"
+                         Opacity="{DynamicResource HUDOpacity}" />
+            </Grid>
+        </Canvas>
+    </Grid>
+</UserControl>
