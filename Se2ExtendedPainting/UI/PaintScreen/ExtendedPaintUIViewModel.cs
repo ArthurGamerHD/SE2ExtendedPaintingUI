@@ -55,7 +55,9 @@ public partial class ExtendedPaintUIViewModel : ScreenViewModel
 
     public void ResetPalette()
     {
-        _paintToolControllable.PaintData.ResetPalette();
+        var @default = new PaintToolPerPlayerData().Palette;
+        for(int i = 0; i < @default.Count; i++)
+            _paintToolControllable.PaintData.Palette[i] = @default[i];
     }
 
     public void OpenPaletteSettings()
