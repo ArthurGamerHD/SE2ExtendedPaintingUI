@@ -3,9 +3,12 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using Avalonia.Collections;
 using HarmonyLib;
+using Keen.Game2.Client.GameSystems;
 using Keen.Game2.Client.GameSystems.PlayerControl.PlayerInput.InputHandlers;
 using Keen.Game2.Client.UI.Library;
+using Keen.Game2.Client.UI.Library.Controls.ControlHints;
 using Keen.Game2.Client.WorldObjects.Tools;
 using Keen.Game2.Game.Plugins;
 using Keen.Game2.Simulation.Utils;
@@ -14,6 +17,7 @@ using Keen.VRage.Input.Extensions;
 using Keen.VRage.Library.Definitions;
 using Keen.VRage.Library.Diagnostics;
 using Keen.VRage.Library.Filesystem;
+using Keen.VRage.Library.Localization;
 using Se2ExtendedPainting.Model;
 using Se2ExtendedPainting.UI;
 using Se2ExtendedPainting.UI.PaintScreen;
@@ -28,22 +32,7 @@ public class PaintToolPlugin : IPlugin
 
     public PaintToolPlugin()
     {
-#if InjectorDebug
-        var @try = 0;
-        Log.Default.WriteLine($"[{PluginId}] Initializing in DEBUG mode.");
-        while (!Debugger.IsAttached && @try < 30)
-        {
-            Log.Default.WriteLine($"[{PluginId}] Waiting for debugger attachment...");
-            System.Threading.Thread.Sleep(1000);
-            @try++;
-        }
-
-        if (!Debugger.IsAttached)
-            Log.Default.WriteLine(
-                $"[{PluginId}] Debugger not attached, consider building in Release to avoid 30 seconds wait time");
-#else
         Log.Default.WriteLine($"[{PluginId}] Initializing.");
-#endif
 
         try
         {
@@ -96,8 +85,29 @@ public class PaintToolPlugin : IPlugin
 
         typeof(InputContextDefinition).GetField("_actions", BindingFlags.Instance | BindingFlags.NonPublic)
             ?.SetValue(context.Definition, definition);
-
+        
         context.SetTrigger(brakes, OpenExtendedPaintTool);
+        
+        var hints = (typeof(PaintToolInputHandlerComponent)
+            .GetField("_inputContextControlHints", BindingFlags.Instance | BindingFlags.NonPublic)?
+            .GetValue(__instance) as InputContextControlHints)?.Hints;
+
+        var actionHint = new BoundActionHint(brakes, (LocKey)"Open Color Picker");
+
+        var actionControlMappings = typeof(ControlHintsLayer)
+            .GetField("_actionControlMappings", BindingFlags.Instance | BindingFlags.NonPublic)?
+            .GetValue(hints) as ActionControlMappingDefinition;
+
+        if(actionControlMappings == null)
+            return;
+        
+        List<InputControl> boundControls = actionHint.BoundControls(actionControlMappings);
+        
+        var hintsList = typeof(ControlHintsLayer)
+            .GetProperty("Hints", BindingFlags.Instance | BindingFlags.NonPublic)?
+            .GetValue(hints) as AvaloniaList<ControlHint>;
+        
+        hintsList?.Add(new ControlHint(actionHint, boundControls));
     }
 
     public static void OpenExtendedPaintTool()
